@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weather Now</title>
+<style>
+  :root{
+    --sky1:#4facfe;
+    --sky2:#00f2fe;
+    --card:rgba(255,255,255,0.18);
+    --text:#fff;
+    --muted:rgba(255,255,255,0.75);
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Segoe UI', system-ui, sans-serif;
+    background:linear-gradient(135deg, var(--sky1), var(--sky2));
+    color:var(--text);
+    padding:20px;
+    transition:background 0.6s ease;
+  }
+  .app{
+    width:min(420px, 100%);
+    background:var(--card);
+    backdrop-filter:blur(20px);
+    border:1px solid rgba(255,255,255,0.25);
+    border-radius:28px;
+    padding:32px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.2);
+  }
+  h1{font-size:1.3rem; margin-bottom:20px; text-align:center; letter-spacing:0.5px;}
+  .search-row{
+    display:flex;
+    gap:10px;
+    margin-bottom:24px;
+  }
+  input[type=text]{
+    flex:1;
+    padding:12px 16px;
+    border-radius:14px;
+    border:none;
+    background:rgba(255,255,255,0.25);
+    color:#fff;
+    font-size:0.95rem;
+    outline:none;
+  }
+  input[type=text]::placeholder{color:rgba(255,255,255,0.7);}
+  button{
+    padding:12px 18px;
+    border:none;
+    border-radius:14px;
+    background:#fff;
+    color:#1a73e8;
+    font-weight:bold;
+    cursor:pointer;
+    transition:transform 0.15s ease;
+  }
+  button:hover{transform:translateY(-2px);}
+  .locate-btn{
+    width:100%;
+    background:rgba(255,255,255,0.15);
+    color:#fff;
+    border:1px solid rgba(255,255,255,0.35);
+    margin-bottom:22px;
+    padding:10px;
+    border-radius:14px;
+    font-size:0.85rem;
+  }
+  .locate-btn:hover{background:rgba(255,255,255,0.25);}
+
+  .main-info{
+    text-align:center;
+    margin-bottom:24px;
+  }
+  .main-info .place{
+    font-size:1.1rem;
+    font-weight:600;
+    margin-bottom:4px;
+  }
+  .main-info .date{
+    font-size:0.8rem;
+    color:var(--muted);
+    margin-bottom:16px;
+  }
+  .main-info .icon{font-size:4rem; margin-bottom:6px;}
+  .main-info .temp{
+    font-size:3.2rem;
+    font-weight:bold;
+    line-height:1;
+  }
+  .main-info .desc{
+    color:var(--muted);
+    font-size:0.95rem;
+    margin-top:4px;
+  }
+
+  .stats-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:10px;
+    margin-bottom:24px;
+  }
+  .stat{
+    background:rgba(255,255,255,0.14);
+    border-radius:16px;
+    padding:14px 8px;
+    text-align:center;
+  }
+  .stat .label{font-size:0.7rem; color:var(--muted); margin-bottom:4px;}
+  .stat .value{font-size:1.05rem; font-weight:bold;}
+
+  .forecast{
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    padding-bottom:4px;
+  }
+  .forecast::-webkit-scrollbar{height:4px;}
+  .forecast::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.3); border-radius:4px;}
+  .fday{
+    flex:0 0 auto;
+    background:rgba(255,255,255,0.12);
+    border-radius:14px;
+    padding:12px 14px;
+    text-align:center;
+    min-width:64px;
+  }
+  .fday .d{font-size:0.75rem; color:var(--muted); margin-bottom:6px;}
+  .fday .i{font-size:1.4rem; margin-bottom:6px;}
+  .fday .t{font-size:0.85rem; font-weight:bold;}
+  .fday .t span{color:var(--muted); font-weight:normal;}
+
+  .status{
+    text-align:center;
+    color:var(--muted);
+    font-size:0.9rem;
+    padding:20px 0;
+  }
+  .hidden{display:none;}
+</style>
+</head>
+<body>
+<div class="app">
+  <h1>🌤️ Weather Now</h1>
+
+  <div class="search-row">
+    <input type="text" id="cityInput" placeholder="Search city (e.g. Chandigarh)">
+    <button id="searchBtn">Go</button>
+  </div>
+  <button class="locate-btn" id="locateBtn">📍 Use my location</button>
+
+  <div id="statusMsg" class="status">Search a city or use your location to begin.</div>
+
+  <div id="weatherContent" class="hidden">
+    <div class="main-info">
+      <div class="place" id="placeName">—</div>
+      <div class="date" id="dateNow">—</div>
+      <div class="icon" id="mainIcon">☀️</div>
+      <div class="temp" id="mainTemp">--°</div>
+      <div class="desc" id="mainDesc">—</div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat"><div class="label">Feels Like</div><div class="value" id="feelsLike">--°</div></div>
+      <div class="stat"><div class="label">Humidity</div><div class="value" id="humidity">--%</div></div>
+      <div class="stat"><div class="label">Wind</div><div class="value" id="wind">-- km/h</div></div>
+    </div>
+
+    <div class="forecast" id="forecast"></div>
+  </div>
+</div>
+
+<script>
+  const weatherCodes = {
+    0:['☀️','Clear sky'], 1:['🌤️','Mainly clear'], 2:['⛅','Partly cloudy'], 3:['☁️','Overcast'],
+    45:['🌫️','Fog'], 48:['🌫️','Rime fog'],
+    51:['🌦️','Light drizzle'], 53:['🌦️','Drizzle'], 55:['🌧️','Dense drizzle'],
+    61:['🌧️','Light rain'], 63:['🌧️','Rain'], 65:['🌧️','Heavy rain'],
+    71:['🌨️','Light snow'], 73:['🌨️','Snow'], 75:['❄️','Heavy snow'],
+    80:['🌦️','Rain showers'], 81:['🌧️','Rain showers'], 82:['⛈️','Violent showers'],
+    95:['⛈️','Thunderstorm'], 96:['⛈️','Thunderstorm w/ hail'], 99:['⛈️','Severe thunderstorm']
+  };
+
+  const els = {
+    status: document.getElementById('statusMsg'),
+    content: document.getElementById('weatherContent'),
+    place: document.getElementById('placeName'),
+    date: document.getElementById('dateNow'),
+    icon: document.getElementById('mainIcon'),
+    temp: document.getElementById('mainTemp'),
+    desc: document.getElementById('mainDesc'),
+    feels: document.getElementById('feelsLike'),
+    humidity: document.getElementById('humidity'),
+    wind: document.getElementById('wind'),
+    forecast: document.getElementById('forecast'),
+    cityInput: document.getElementById('cityInput'),
+    searchBtn: document.getElementById('searchBtn'),
+    locateBtn: document.getElementById('locateBtn'),
+  };
+
+  function setStatus(msg){
+    els.status.textContent = msg;
+    els.status.classList.remove('hidden');
+    els.content.classList.add('hidden');
+  }
+
+  function setBackground(code, isDay){
+    const body = document.body;
+    if(!isDay){
+      body.style.background = 'linear-gradient(135deg,#0f2027,#203a43,#2c5364)';
+    } else if(code === 0 || code === 1){
+      body.style.background = 'linear-gradient(135deg,#4facfe,#00f2fe)';
+    } else if(code <= 3){
+      body.style.background = 'linear-gradient(135deg,#757f9a,#d7dde8)';
+    } else if(code >= 51 && code <= 82){
+      body.style.background = 'linear-gradient(135deg,#4b6cb7,#182848)';
+    } else if(code >= 71 && code <= 75){
+      body.style.background = 'linear-gradient(135deg,#83a4d4,#b6fbff)';
+    } else if(code >= 95){
+      body.style.background = 'linear-gradient(135deg,#0f0c29,#302b63,#24243e)';
+    } else {
+      body.style.background = 'linear-gradient(135deg,#4facfe,#00f2fe)';
+    }
+  }
+
+  async function geocodeCity(city){
+    const url = `https://geocoding-api.open-meteo.com/v1/search?name=${encodeURIComponent(city)}&count=1`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if(!data.results || data.results.length === 0) return null;
+    const r = data.results[0];
+    return { lat: r.latitude, lon: r.longitude, name: r.name, country: r.country };
+  }
+
+  async function reverseGeocode(lat, lon){
+    try{
+      const url = `https://geocoding-api.open-meteo.com/v1/search?name=&count=1`;
+      // Open-Meteo geocoding doesn't support reverse lookup; fallback label
+      return { name: 'Your Location', country: '' };
+    }catch(e){
+      return { name: 'Your Location', country: '' };
+    }
+  }
+
+  async function fetchWeather(lat, lon){
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}` +
+      `&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,is_day` +
+      `&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto`;
+    const res = await fetch(url);
+    if(!res.ok) throw new Error('Weather fetch failed');
+    return res.json();
+  }
+
+  function renderWeather(place, data){
+    const cur = data.current;
+    const [icon, desc] = weatherCodes[cur.weather_code] || ['🌡️','Unknown'];
+
+    els.place.textContent = place.country ? `${place.name}, ${place.country}` : place.name;
+    els.date.textContent = new Date().toLocaleDateString(undefined, { weekday:'long', month:'long', day:'numeric' });
+    els.icon.textContent = icon;
+    els.temp.textContent = `${Math.round(cur.temperature_2m)}°C`;
+    els.desc.textContent = desc;
+    els.feels.textContent = `${Math.round(cur.apparent_temperature)}°C`;
+    els.humidity.textContent = `${cur.relative_humidity_2m}%`;
+    els.wind.textContent = `${Math.round(cur.wind_speed_10m)} km/h`;
+
+    setBackground(cur.weather_code, cur.is_day);
+
+    els.forecast.innerHTML = '';
+    const days = data.daily.time;
+    for(let i=0; i<Math.min(6, days.length); i++){
+      const d = new Date(days[i]);
+      const label = i === 0 ? 'Today' : d.toLocaleDateString(undefined, { weekday:'short' });
+      const [dicon] = weatherCodes[data.daily.weather_code[i]] || ['🌡️'];
+      const max = Math.round(data.daily.temperature_2m_max[i]);
+      const min = Math.round(data.daily.temperature_2m_min[i]);
+      const el = document.createElement('div');
+      el.className = 'fday';
+      el.innerHTML = `<div class="d">${label}</div><div class="i">${dicon}</div><div class="t">${max}° <span>${min}°</span></div>`;
+      els.forecast.appendChild(el);
+    }
+
+    els.status.classList.add('hidden');
+    els.content.classList.remove('hidden');
+  }
+
+  async function loadCity(city){
+    setStatus(`Searching for "${city}"...`);
+    try{
+      const place = await geocodeCity(city);
+      if(!place){
+        setStatus(`Couldn't find "${city}". Try another spelling.`);
+        return;
+      }
+      const data = await fetchWeather(place.lat, place.lon);
+      renderWeather(place, data);
+    }catch(e){
+      setStatus('Something went wrong. Please try again.');
+    }
+  }
+
+  async function loadByCoords(lat, lon){
+    setStatus('Fetching weather for your location...');
+    try{
+      const data = await fetchWeather(lat, lon);
+      renderWeather({ name: 'Your Location', country: '' }, data);
+    }catch(e){
+      setStatus('Could not fetch weather. Please try again.');
+    }
+  }
+
+  els.searchBtn.addEventListener('click', ()=>{
+    const city = els.cityInput.value.trim();
+    if(city) loadCity(city);
+  });
+  els.cityInput.addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter'){
+      const city = els.cityInput.value.trim();
+      if(city) loadCity(city);
+    }
+  });
+
+  els.locateBtn.addEventListener('click', ()=>{
+    if(!navigator.geolocation){
+      setStatus('Geolocation not supported by your browser.');
+      return;
+    }
+    setStatus('Getting your location...');
+    navigator.geolocation.getCurrentPosition(
+      (pos)=> loadByCoords(pos.coords.latitude, pos.coords.longitude),
+      ()=> setStatus('Location access denied. Try searching a city instead.')
+    );
+  });
+
+  // Default load
+  loadCity('Chandigarh');
+</script>
+</body>
+</html>
