@@ -18,4 +18,4 @@ A simple weather application built using HTML, CSS, and JavaScript.
 ![alt text](image.png)
 
 ## Author
-Deepsikha Singh
+Deepsikha
