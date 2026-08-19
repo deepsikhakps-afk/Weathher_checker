@@ -9,7 +9,7 @@ A simple weather application built using HTML, CSS, and JavaScript.
 - Dynamic background based on weather
 
 ## Technologies Used
-- HTML5
+- HTML5 for structure
 - CSS3
 - JavaScript
 - OpenWeather API
