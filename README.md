@@ -15,6 +15,7 @@ A simple weather application built using HTML, CSS, and JavaScript.
 - OpenWeather API
 
 # Screenshots
+![alt text](image.png)
 
 ## Author
 Deepsikha Singh
