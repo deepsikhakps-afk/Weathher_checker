@@ -12,7 +12,7 @@ A simple weather application built using HTML, CSS, and JavaScript.
 - HTML5 
 - CSS3
 - JavaScript
-- OpenWeather 
+- OpenWeather API
 
 # Screenshots
 ![alt text](image.png)
