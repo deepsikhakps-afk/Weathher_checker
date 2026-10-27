@@ -3,7 +3,7 @@
 A simple weather application built using HTML, CSS, and JavaScript.
 
 ## Features
-- Search weather by 
+- Search weather by city
 - Current location weather
 - Responsive UI
 - Dynamic background based on weather
