@@ -1,6 +1,6 @@
 # Weather Now 🌦️
 
-
+A simple weather application built using HTML, CSS, and JavaScript.
 
 ## Features
 - Search weather by city
