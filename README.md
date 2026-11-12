@@ -6,7 +6,7 @@ A simple weather application built using HTML, CSS, and JavaScript.
 - Search weather by city
 - Current location 
 - Responsive UI
-- Dynamic background based on weather
+- Dynamic background based on 
 
 ## Technologies Used
 - HTML5 
