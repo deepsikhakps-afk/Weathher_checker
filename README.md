@@ -10,7 +10,7 @@ A simple weather application built using HTML, CSS, and JavaScript.
 
 ## Technologies Used
 - HTML5 
-- CS
+- CSS3
 - JavaScript
 - OpenWeather API
 
